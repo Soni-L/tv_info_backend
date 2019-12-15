@@ -8,9 +8,7 @@ const Op = Sequelize.Op;
 // Get TVShows list
 router.get("/", (req, res) =>
   TVShow.findAll()
-    .then(shows =>
-      res.send(shows)
-    )
+    .then(shows => res.send(shows))
     .catch(err => console.log("retreive tv shows error" + err))
 );
 
@@ -32,6 +30,20 @@ router.post("/create", (req, res) => {
     .catch(err => {
       res.status(400).send("unable to save to database");
     });
+});
+
+router.delete("/delete/:id", async (req, res) => {
+  var id = req.params.id;
+  TVShow.destroy({
+    where: {
+      TMDB_ID: id
+    }
+  }).then(Response => {
+    res.status(200).json({ model: "Your data is deleted" });
+  })
+  .catch(err => {
+    res.status(400).send("unable to delete");
+  });
 });
 
 module.exports = router;
