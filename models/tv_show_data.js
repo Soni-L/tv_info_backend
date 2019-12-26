@@ -3,7 +3,7 @@ const db = require('../config/database');
 
 const tv_show_data = db.define('tv_show_data', {
   TMDB_ID: {
-    type: Sequelize.STRING
+    type: Sequelize.INTEGER
   },
   title: {
     type: Sequelize.STRING
