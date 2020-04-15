@@ -10,8 +10,8 @@ const axios = require("axios");
 // Get TVShows list
 router.get("/", (req, res) =>
   TVShow.findAll()
-    .then(shows => res.send(shows))
-    .catch(err => console.log("retreive tv shows error" + err))
+    .then((shows) => res.send(shows))
+    .catch((err) => console.log("retreive tv shows error" + err))
 );
 
 // Add a TVShows
@@ -22,35 +22,41 @@ router.post("/create", (req, res) => {
   // Insert into table
 
   TVShow.create({
-    TMDB_ID : TMDB_ID,
-    title : title,
-    rating : rating,
-    description : description
+    TMDB_ID: TMDB_ID,
+    title: title,
+    rating: rating,
+    description: description,
   })
-    .then(Response => {
+    .then((Response) => {
       res.status(200).json({ model: "Your data is saved" });
     })
     .then(() => {
       addSeasons(TMDB_ID);
     })
-    .catch(err => {
+    .catch((err) => {
       res.status(400).send("unable to save to database");
     });
 });
 
 router.delete("/delete/:id", async (req, res) => {
   var id = req.params.id;
-  TVShow.destroy({
-    where: {
-      TMDB_ID: id
-    }
-  })
-    .then(Response => {
-      res.status(200).json({ model: "Your data is deleted" });
-    })
-    .catch(err => {
-      res.status(400).send("unable to delete");
+  try {
+    await TVSeason.destroy({
+      where: {
+        TMDB_ID: id,
+      },
     });
+    
+    await TVShow.destroy({
+      where: {
+        TMDB_ID: id,
+      },
+    });
+
+    res.status(200).json({ model: "Your data is deleted" });
+  } catch {
+    res.status(400).send("unable to delete");
+  }
 });
 
 function addSeasons(TMDB_ID) {
@@ -58,7 +64,7 @@ function addSeasons(TMDB_ID) {
     .get(
       `https://api.themoviedb.org/3/tv/${TMDB_ID}?api_key=21f2b5b6f615bd7d9bcd153290b5398c`
     )
-    .then(response => {
+    .then((response) => {
       let seasons = response.data.seasons;
       let title = response.data.name;
       for (let i = 0; i < seasons.length; i++) {
@@ -69,7 +75,7 @@ function addSeasons(TMDB_ID) {
           name,
           overview,
           poster_path,
-          season_number
+          season_number,
         } = seasons[i];
         let season_id = id;
 
@@ -80,17 +86,17 @@ function addSeasons(TMDB_ID) {
           name: name,
           overview: overview,
           TMDB_ID: TMDB_ID,
-          air_date : air_date
+          air_date: air_date,
         })
-          .then(Response => {
+          .then((Response) => {
             console.log(`Season ${season_number} is saved`);
           })
-          .catch(err => {
+          .catch((err) => {
             console.log(err);
           });
       }
     })
-    .catch(err => console.log(err));
+    .catch((err) => console.log(err));
 }
 
 module.exports = router;
